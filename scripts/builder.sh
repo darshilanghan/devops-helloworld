@@ -36,6 +36,10 @@ fi
 
 docker rm -f test_container
 
+echo "Logging into Docker Hub..."
+
+docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
 echo "Pushing image..."
 
 docker push $FULL_IMAGE
