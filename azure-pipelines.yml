@@ -1,0 +1,35 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  IMAGE: helloworld
+  REPO: darshilanghan4
+  TAG: $(Build.BuildNumber)
+
+steps:
+  - script: |
+      chmod +x scripts/builder.sh
+      IMAGE=$(IMAGE) \
+      REPO=$(REPO) \
+      TAG=$(TAG) \
+      APP_PATH=APP \
+      ./scripts/builder.sh
+    displayName: Run Builder Script
+    env:
+      DOCKER_USERNAME: $(DOCKER_USERNAME)
+      DOCKER_PASSWORD: $(DOCKER_PASSWORD)
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: APP
+      artifactName: app-artifacts
