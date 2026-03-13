@@ -17,19 +17,19 @@ variables:
   TAG: $(Build.BuildNumber)
 
 steps:
-  - script: |
-      chmod +x scripts/builder.sh
-      IMAGE=$(IMAGE) \
-      REPO=$(REPO) \
-      TAG=$(TAG) \
-      APP_PATH=APP \
-      ./scripts/builder.sh
-    displayName: Run Builder Script
-    env:
-      DOCKER_USERNAME: $(DOCKER_USERNAME)
-      DOCKER_PASSWORD: $(DOCKER_PASSWORD)
+- script: |
+    chmod +x scripts/builder.sh
+    IMAGE=$(IMAGE) \
+    REPO=$(REPO) \
+    TAG=$(TAG) \
+    APP_PATH=app \
+    ./scripts/builder.sh
+  displayName: Run Builder Script
+  env:
+    DOCKER_USERNAME: $(DOCKER_USERNAME)
+    DOCKER_PASSWORD: $(DOCKER_PASSWORD)
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: APP
-      artifactName: app-artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: app
+    artifactName: app-artifacts
