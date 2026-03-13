@@ -21,7 +21,7 @@ variables:
   value: darshilanghan4
 
 - name: TAG
-  value: $(Build.BuildNumber)
+  value: helloworld
 
 steps:
 
