@@ -38,7 +38,8 @@ docker rm -f test_container
 
 echo "Logging into Docker Hub..."
 
-docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+#docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
 echo "Pushing image..."
 
