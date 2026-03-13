@@ -3,7 +3,7 @@
 IMAGE=${IMAGE:-helloworld}
 REPO=${REPO:-darshil}
 TAG=${TAG:-v1.0}
-APP_PATH=${APP_PATH:-../APP}
+APP_PATH=${APP_PATH:-../app}
 
 FULL_IMAGE=$REPO/$IMAGE:$TAG
 
