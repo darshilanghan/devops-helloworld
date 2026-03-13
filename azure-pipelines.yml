@@ -12,9 +12,16 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  IMAGE: helloworld
-  REPO: darshilanghan4
-  TAG: $(Build.BuildNumber)
+- group: docker-secrets
+
+- name: IMAGE
+  value: helloworld
+
+- name: REPO
+  value: darshilanghan4
+
+- name: TAG
+  value: $(Build.BuildNumber)
 
 steps:
 - script: |
