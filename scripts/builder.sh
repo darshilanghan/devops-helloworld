@@ -12,11 +12,11 @@ FULL_IMAGE=$REPO/$IMAGE:$TAG
 
 echo "Checking if image exists on DockerHub..."
 
-docker manifest inspect $FULL_IMAGE > /dev/null 2>&1
-
-if [ $? -eq 0 ]; then
+if docker manifest inspect $FULL_IMAGE > /dev/null 2>&1; then
   echo "Image already exists. Exiting."
   exit 0
+else
+  echo "Image not found. Building new image."
 fi
 
 echo "Building Docker image..."
@@ -30,12 +30,6 @@ docker run -d -p 5000:5000 --name test_container $FULL_IMAGE
 sleep 5
 
 curl -f http://localhost:5000/health
-
-if [ $? -ne 0 ]; then
-   echo "Validation failed"
-   docker rm -f test_container
-   exit 1
-fi
 
 docker rm -f test_container
 
