@@ -24,13 +24,28 @@ variables:
   value: $(Build.BuildNumber)
 
 steps:
+
 - script: |
     chmod +x scripts/builder.sh
-    IMAGE=$(IMAGE) \
-    REPO=$(REPO) \
-    TAG=$(TAG) \
-    APP_PATH=app \
-    ./scripts/builder.sh
+
+    if [ "$(Build.Reason)" = "PullRequest" ]; then
+      echo "Pull Request detected → Build only (no push)"
+      IMAGE=$(IMAGE) \
+      REPO=$(REPO) \
+      TAG=$(TAG) \
+      APP_PATH=app \
+      PUSH=false \
+      ./scripts/builder.sh
+    else
+      echo "Push to main detected → Build and Push image"
+      IMAGE=$(IMAGE) \
+      REPO=$(REPO) \
+      TAG=$(TAG) \
+      APP_PATH=app \
+      PUSH=true \
+      ./scripts/builder.sh
+    fi
+
   displayName: Run Builder Script
   env:
     DOCKER_USERNAME: $(DOCKER_USERNAME)
