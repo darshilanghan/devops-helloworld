@@ -54,4 +54,4 @@ steps:
 - task: PublishBuildArtifacts@1
   inputs:
     pathToPublish: app
-    artifactName: app-artifacts
+    artifactName: app-artifacts 
