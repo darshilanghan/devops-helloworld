@@ -1,9 +1,12 @@
 #!/bin/bash
 
+set -e
+
 IMAGE=${IMAGE:-helloworld}
 REPO=${REPO:-darshil}
 TAG=${TAG:-v1.0}
 APP_PATH=${APP_PATH:-../app}
+PUSH=${PUSH:-true}
 
 FULL_IMAGE=$REPO/$IMAGE:$TAG
 
@@ -36,13 +39,22 @@ fi
 
 docker rm -f test_container
 
-echo "Logging into Docker Hub..."
+if [ "$PUSH" = "true" ]; then
 
-#docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+  echo "Logging into Docker Hub..."
 
-echo "Pushing image..."
+  echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
-docker push $FULL_IMAGE
+  echo "Pushing image..."
 
-echo "Build and push complete"
+  docker push $FULL_IMAGE
+
+  echo "Docker image pushed successfully"
+
+else
+
+  echo "Push skipped (Pull Request build)"
+
+fi
+
+echo "Build process complete"
