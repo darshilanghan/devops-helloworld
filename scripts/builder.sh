@@ -1,4 +1,4 @@
-#!/bin/bash
+# #!/bin/bash
 
 set -e
 
@@ -9,6 +9,7 @@ APP_PATH=${APP_PATH:-../app}
 PUSH=${PUSH:-true}
 
 FULL_IMAGE=$REPO/$IMAGE:$TAG
+NETWORK=test_network
 
 echo "Checking if image exists on DockerHub..."
 
@@ -23,15 +24,50 @@ echo "Building Docker image..."
 
 docker build -t $FULL_IMAGE $APP_PATH
 
-echo "Running container for validation..."
+echo "Cleaning old containers..."
 
-docker run -d -p 5000:5000 --name test_container $FULL_IMAGE
+docker rm -f test_container redis mongo 2>/dev/null || true
+docker network rm $NETWORK 2>/dev/null || true
 
-sleep 5
+echo "Creating docker network..."
+
+docker network create $NETWORK
+
+echo "Starting Redis container..."
+
+docker run -d \
+  --name redis \
+  --network $NETWORK \
+  redis:7
+
+echo "Starting MongoDB container..."
+
+docker run -d \
+  --name mongo \
+  --network $NETWORK \
+  mongo:7
+
+echo "Starting Flask application..."
+
+docker run -d \
+  -p 5000:5000 \
+  --name test_container \
+  --network $NETWORK \
+  -e REDIS_HOST=redis \
+  -e REDIS_PORT=6379 \
+  -e MONGO_URI=mongodb://mongo:27017 \
+  $FULL_IMAGE
+
+
+echo "Waiting for container to start..."
+
+sleep 8
+
+echo "Validating application..."
 
 curl -f http://localhost:5000/health
 
-docker rm -f test_container
+echo "Application is healthy"
 
 if [ "$PUSH" = "true" ]; then
 
@@ -52,3 +88,4 @@ else
 fi
 
 echo "Build process complete"
+
