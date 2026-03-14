@@ -10,7 +10,7 @@ PUSH=${PUSH:-true}
 
 FULL_IMAGE=$REPO/$IMAGE:$TAG
 NETWORK=test_network
-
+ 
 echo "Checking if image exists on DockerHub..."
 
 if docker manifest inspect $FULL_IMAGE > /dev/null 2>&1; then
