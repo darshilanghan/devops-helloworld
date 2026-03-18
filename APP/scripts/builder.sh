@@ -20,7 +20,30 @@ fi
 echo "Building Docker image..."
 docker build -t $FULL_IMAGE $APP_PATH
 
+# ================================
+# 🔥 ADD THIS BLOCK (Redis + Mongo)
+# ================================
+
+echo "Checking Redis container..."
+if [ "$(docker ps -q -f name=redis)" ]; then
+  echo "Redis already running"
+else
+  echo "Starting Redis..."
+  docker run -d -p 6379:6379 --name redis redis || docker start redis
+fi
+
+echo "Checking MongoDB container..."
+if [ "$(docker ps -q -f name=mongodb)" ]; then
+  echo "MongoDB already running"
+else
+  echo "Starting MongoDB..."
+  docker run -d -p 27017:27017 --name mongodb mongo || docker start mongodb
+fi
+
+# ================================
+
 echo "Running container for validation..."
+docker rm -f test_container >/dev/null 2>&1 || true
 docker run -d -p 5005:5005 --name test_container $FULL_IMAGE
 
 sleep 5
@@ -42,5 +65,3 @@ else
 fi
 
 echo "Build process complete"
-
-
