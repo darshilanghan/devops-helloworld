@@ -10,12 +10,10 @@ def create_app() -> Flask:
     """Application factory – creates and configures the Flask app."""
     app = Flask(__name__)
 
-    # Register blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(redis_bp)
 
-    # Eagerly connect to backing services
     with app.app_context():
         redis_service.connect()
         mongo_service.connect()
