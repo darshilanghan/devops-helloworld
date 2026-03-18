@@ -12,7 +12,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  - group: docker-secrets ## azure variable group name
+  - group: docker-secrets # contains DOCKER_USERNAME & DOCKER_PASSWORD
 
   - name: IMAGE
     value: helloworld
@@ -21,36 +21,37 @@ variables:
     value: darshilanghan4
 
   - name: TAG
-    value: helloworld
+    value: $(Build.BuildId)
 
 steps:
   - script: |
       chmod +x scripts/builder.sh
 
       if [ "$(Build.Reason)" = "PullRequest" ]; then
-        echo "Pull Request detected → Build only (no push)"
+        echo "Pull Request detected → Build only"
         IMAGE=$(IMAGE) \
-        REPO=$(REPO) \
         TAG=$(TAG) \
-        APP_PATH=app \
-        PUSH=false \
+        APP_PATH=. \
         ./scripts/builder.sh
       else
-        echo "Push to main detected → Build and Push image"
-        IMAGE=$(IMAGE) \
-        REPO=$(REPO) \
-        TAG=$(TAG) \
-        APP_PATH=app \
-        PUSH=true \
-        ./scripts/builder.sh
+        echo "Push to main → Build and Push"
+
+        # Login to Docker Hub
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+        # Build image
+        docker build -t $(REPO)/$(IMAGE):$(TAG) .
+
+        # Push image
+        docker push $(REPO)/$(IMAGE):$(TAG)
       fi
 
-    displayName: Run Builder Script
+    displayName: Build & Push Docker Image
     env:
       DOCKER_USERNAME: $(DOCKER_USERNAME)
       DOCKER_PASSWORD: $(DOCKER_PASSWORD)
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: app
+      pathToPublish: .
       artifactName: app-artifacts
