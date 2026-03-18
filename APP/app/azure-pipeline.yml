@@ -1,0 +1,56 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: docker-secrets ## azure variable group name
+
+  - name: IMAGE
+    value: helloworld
+
+  - name: REPO
+    value: darshilanghan4
+
+  - name: TAG
+    value: helloworld
+
+steps:
+  - script: |
+      chmod +x scripts/builder.sh
+
+      if [ "$(Build.Reason)" = "PullRequest" ]; then
+        echo "Pull Request detected → Build only (no push)"
+        IMAGE=$(IMAGE) \
+        REPO=$(REPO) \
+        TAG=$(TAG) \
+        APP_PATH=app \
+        PUSH=false \
+        ./scripts/builder.sh
+      else
+        echo "Push to main detected → Build and Push image"
+        IMAGE=$(IMAGE) \
+        REPO=$(REPO) \
+        TAG=$(TAG) \
+        APP_PATH=app \
+        PUSH=true \
+        ./scripts/builder.sh
+      fi
+
+    displayName: Run Builder Script
+    env:
+      DOCKER_USERNAME: $(DOCKER_USERNAME)
+      DOCKER_PASSWORD: $(DOCKER_PASSWORD)
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: app
+      artifactName: app-artifacts
