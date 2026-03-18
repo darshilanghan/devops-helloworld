@@ -25,25 +25,32 @@ variables:
 
 steps:
   - script: |
+      echo "📁 Moving into APP folder"
+      cd APP
+
+      echo "🔧 Making script executable"
       chmod +x scripts/builder.sh
 
       if [ "$(Build.Reason)" = "PullRequest" ]; then
-        echo "Pull Request detected → Build only"
+        echo "🔹 Pull Request → Build only (no push)"
         IMAGE=$(IMAGE) \
         TAG=$(TAG) \
         APP_PATH=. \
         ./scripts/builder.sh
-      else
-        echo "Push to main → Build and Push"
 
-        # Login to Docker Hub
+      else
+        echo "🚀 Push to main → Build and Push"
+
+        echo "🔐 Logging into Docker Hub"
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
-        # Build image
+        echo "🐳 Building Docker image"
         docker build -t $(REPO)/$(IMAGE):$(TAG) .
 
-        # Push image
+        echo "📤 Pushing Docker image"
         docker push $(REPO)/$(IMAGE):$(TAG)
+
+        echo "✅ Image pushed: $(REPO)/$(IMAGE):$(TAG)"
       fi
 
     displayName: Build & Push Docker Image
@@ -53,5 +60,5 @@ steps:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: .
+      pathToPublish: APP
       artifactName: app-artifacts
