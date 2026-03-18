@@ -12,7 +12,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  - group: docker-secrets # contains DOCKER_USERNAME & DOCKER_PASSWORD
+  - group: docker-secrets ## azure variable group name
 
   - name: IMAGE
     value: helloworld
@@ -21,39 +21,31 @@ variables:
     value: darshilanghan4
 
   - name: TAG
-    value: $(Build.BuildId)
+    value: helloworld
 
 steps:
   - script: |
-      echo "📁 Moving into APP folder"
-      cd APP
-
-      echo "🔧 Making script executable"
-      chmod +x scripts/builder.sh
+      chmod +x APP/scripts/builder.sh
 
       if [ "$(Build.Reason)" = "PullRequest" ]; then
-        echo "🔹 Pull Request → Build only (no push)"
+        echo "Pull Request detected → Build only (no push)"
         IMAGE=$(IMAGE) \
+        REPO=$(REPO) \
         TAG=$(TAG) \
-        APP_PATH=. \
-        ./scripts/builder.sh
-
+        APP_PATH=APP \
+        PUSH=false \
+        ./APP/scripts/builder.sh
       else
-        echo "🚀 Push to main → Build and Push"
-
-        echo "🔐 Logging into Docker Hub"
-        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-
-        echo "🐳 Building Docker image"
-        docker build -t $(REPO)/$(IMAGE):$(TAG) .
-
-        echo "📤 Pushing Docker image"
-        docker push $(REPO)/$(IMAGE):$(TAG)
-
-        echo "✅ Image pushed: $(REPO)/$(IMAGE):$(TAG)"
+        echo "Push to main detected → Build and Push image"
+        IMAGE=$(IMAGE) \
+        REPO=$(REPO) \
+        TAG=$(TAG) \
+        APP_PATH=APP \
+        PUSH=true \
+        ./APP/scripts/builder.sh
       fi
 
-    displayName: Build & Push Docker Image
+    displayName: Run Builder Script
     env:
       DOCKER_USERNAME: $(DOCKER_USERNAME)
       DOCKER_PASSWORD: $(DOCKER_PASSWORD)
